@@ -1,0 +1,28 @@
+    AREA RESET, DATA, READONLY
+    EXPORT __Vectors
+__Vectors
+    DCD 0x10001000        
+    DCD Reset_Handler
+    ALIGN
+
+    AREA mycode, CODE, READONLY
+    ENTRY
+    EXPORT Reset_Handler
+Reset_Handler
+    LDR R0,=SRC        ; Load address of SRC (packed BCD number)
+    MOV R1, #3         ; Set counter for the 4 digits (start with the highest byte)
+    MOV R2, #0         ; Clear R2 to accumulate the hexadecimal result (32-bit)
+    
+LOOP
+    LDRB R3, [R0, R1]  ; Load the byte from SRC
+    AND R3, R3, #0x0F  ; Mask the lower 4 bits to get the first BCD digit
+    ORR R2, R2, R3     ; Place the BCD digit in the correct position of R2 (hex result)
+    LSL R2, R2, #4     ; Shift the result left by 4 to make space for the next digit
+    
+    SUBS R1, R1, #1    ; Decrement R1 to move to the next byte
+    BPL LOOP           ; Repeat until all digits are processed
+    
+    LDR R0, =DST       ; Load the address of DST to store the result
+    STR R2, [R0]       ; Store the result in DST (32-bit hexadecimal)
+    
+STOP B STOP
